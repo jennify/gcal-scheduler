@@ -71,7 +71,7 @@ class GCalAPI(object):
             print 'Storing credentials to ' + credential_path
         return credentials
 
-    def find_meeting_time(self, title, participants, num_days, description, location):
+    def find_meeting_time(self, participants, num_days):
         """ Returns top 3 options when you will all be free.
         num_days: Number of days that will be scanned
         """
@@ -90,17 +90,17 @@ class GCalAPI(object):
 
         return top_availabilities
 
-    def schedule_meeting(self, summary, participants, start_date, description, location):
+    def schedule_meeting(self, summary, participants, start_date, end_date, description, location):
+        default_date = '2016-07-26T09:00:00-07:00'
         event = {
           'summary': summary,
-          'location': location,
           'description': description,
           'start': {
-            'dateTime': '2016-07-26T09:00:00-07:00', #TODO(jlee): Figure out input start_date format
+            'dateTime': start_date or default_date,
             'timeZone': 'America/Los_Angeles',
           },
           'end': {
-            'dateTime': '2016-07-26T17:00:00-07:00', #TODO(jlee): Figure out input start_date format
+            'dateTime': end_date or default_date,
             'timeZone': 'America/Los_Angeles',
           },
           'attendees': [{'email': p for p in participants}],
@@ -108,6 +108,27 @@ class GCalAPI(object):
             'useDefault': True,
           },
         }
+
+
+        if location:
+            event['location'] = location
+        # event = {
+        #   'summary': summary,
+        #   'location': location,
+        #   'description': description,
+        #   'start': {
+        #     'dateTime': '2016-07-26T09:00:00-07:00', #TODO(jlee): Figure out input start_date format
+        #     'timeZone': 'America/Los_Angeles',
+        #   },
+        #   'end': {
+        #     'dateTime': '2016-07-26T17:00:00-07:00', #TODO(jlee): Figure out input start_date format
+        #     'timeZone': 'America/Los_Angeles',
+        #   },
+        #   'attendees': [{'email': p for p in participants}],
+        #   'reminders': {
+        #     'useDefault': True,
+        #   },
+        # }
         self.api_add_event(event)
 
     def list_availabilities_for_day(self, participants=[], start_date=None):
@@ -225,9 +246,9 @@ class GCalAPI(object):
 
         created_event = self.service.events().insert(calendarId='primary', body=event).execute()
         print 'Event created:' + str(created_event.get('htmlLink'))
-        eventId = created_event.get('id')
-        self.service.events().delete(calendarId='primary', eventId=eventId).execute()
-        print 'Event deleted:' + str(created_event.get('htmlLink'))
+        # eventId = created_event.get('id')
+        # self.service.events().delete(calendarId='primary', eventId=eventId).execute()
+        # print 'Event deleted:' + str(created_event.get('htmlLink'))
 
 api = GCalAPI()
 
@@ -240,18 +261,21 @@ def index(request):
     return HttpResponse("Hello, world.")
 
 def find_meeting_time(request):
-    summary = request.GET.get('summary', "No Summary")
     participants = request.GET.getlist('participants', [])
     participants.append("jlee@dropbox.com") # I'm always in the meeting :)
     num_days = int(request.GET.get('num_days', 2))
-    description = request.GET.get('description', "No Description")
-    location = request.GET.get('location')
-
     print "Processing %s" % participants
-    avails = api.find_meeting_time(
-        summary, participants, num_days, description, location)
+    avails = api.find_meeting_time(participants, num_days)
 
     return JsonResponse({'meetings':avails})
 
 def schedule_meeting(request):
+    summary = request.GET.get('summary', "No Summary")
+    participants = request.GET.getlist('participants', [])
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    description = request.GET.get('description', "No Description")
+    location = request.GET.get('location')
+
+    api.schedule_meeting(summary, participants, start_date, end_date, description, location)
     return JsonResponse({'status':'ok'})
