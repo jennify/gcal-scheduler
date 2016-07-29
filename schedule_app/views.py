@@ -189,7 +189,7 @@ class GCalAPI(object):
             print 'No upcoming events found.'
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            print start, event['summary'] if 'summary' in event else "No summary"
+            print start, event['summary'].encode('ascii', 'ignore') if 'summary' in event else "No summary"
 
         return events
 
