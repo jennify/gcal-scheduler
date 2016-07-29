@@ -241,15 +241,13 @@ def index(request):
 
 def find_meeting_time(request):
     summary = request.GET.get('summary', "No Summary")
-    participants = request.GET.get('participants', [])
-    num_days = int(request.GET.get('num_days', 4))
+    participants = request.GET.getlist('participants', [])
+    participants.append("jlee@dropbox.com") # I'm always in the meeting :)
+    num_days = int(request.GET.get('num_days', 2))
     description = request.GET.get('description', "No Description")
     location = request.GET.get('location')
-    participants = [participants]
-    participants.append("jlee@dropbox.com") # I'm always in the meeting :)
 
     print "Processing %s" % participants
-
     avails = api.find_meeting_time(
         summary, participants, num_days, description, location)
 
