@@ -129,7 +129,7 @@ class GCalAPI(object):
         #     'useDefault': True,
         #   },
         # }
-        self.api_add_event(event)
+        return self.api_add_event(event)
 
     def list_availabilities_for_day(self, participants=[], start_date=None):
         """ Build and availability map for all participants."""
@@ -249,6 +249,7 @@ class GCalAPI(object):
         # eventId = created_event.get('id')
         # self.service.events().delete(calendarId='primary', eventId=eventId).execute()
         # print 'Event deleted:' + str(created_event.get('htmlLink'))
+        return str(created_event.get('htmlLink'))
 
 api = GCalAPI()
 
@@ -277,5 +278,5 @@ def schedule_meeting(request):
     description = request.GET.get('description', "No Description")
     location = request.GET.get('location')
 
-    api.schedule_meeting(summary, participants, start_date, end_date, description, location)
-    return JsonResponse({'status':'ok'})
+    event = api.schedule_meeting(summary, participants, start_date, end_date, description, location)
+    return JsonResponse({'status':'ok', 'event': event})
