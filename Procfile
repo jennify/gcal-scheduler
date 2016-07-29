@@ -1,0 +1,1 @@
+web: gunicorn gcal_scheduler.wsgi --log-file -
