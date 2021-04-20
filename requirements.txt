@@ -17,7 +17,7 @@ pexpect==4.0.1
 pickleshare==0.7.2
 ply==3.8
 ptyprocess==0.5.1
-py==1.4.30
+py==1.10.0
 py2app==0.7.3
 pyasn1==0.1.9
 pyasn1-modules==0.0.8
